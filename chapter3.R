@@ -214,6 +214,7 @@ p_grid[which.min(loss)]
 
 # Try the median of the posterior(samples)
 median(samples)
+mean(samples)
 
 # What's the punchline?
 # In order to decide on a point estimate, a single value summary of the posterior distribution
