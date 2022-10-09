@@ -96,6 +96,12 @@ library(rethinking)
 # Now we have a density estimate
 dens(samples)
 
+# How to plot out the samples w/o the helper
+# TODO: sort out how to plot the density function w/o the rethinking function
+library(ggplot2)
+
+
+
 # Notice the density estimate is very similar to the ideal posterior we computed
 # As we draw more samples, the density estimate gets closer to the ideal posterior
 
@@ -113,4 +119,110 @@ dens(samples)
 # Questions about intervals of defined boundaries
 # Questions about the intervals of defined probability mass
 # Questions about point estimates.
+
+
+# Intervals of defined boundaries
+# This works when we have a single parameter, but is much more challenging with more parameters
+# Grid approximation isn't practical in general, though
+sum( posterior [ p_grid < 0.5 ])
+
+
+sum( samples < 0.5 ) / 1e4
+sum( samples < 0.5 ) / 1e5
+
+sum( samples > 0.5 & samples < 0.75) / 1e4
+
+# Intervals of defined mass
+# CONFIDENCE INTERVAL Scientific journals often report an interval of deifned mass known as a confidence interval
+# An interval of posterior probability, like what we're working with, may be called a CREDIBLE INTERVAL
+# We'll use a 3rd term to disambiguiate: COMPATIBILITY INTERVAL, to avoid implications of credibility and confidence.
+# Compatibility Interval is the range of parameter values compatible with the model and data
+# Compatibility Interval is the range of parameter values compatible with the model and the data
+# These posterior intervals report two parameter values that contain a specified amount of posterior probability between them, a probability mass
+
+# Suppose we want to know the boundaries of the lower 80% prior probabilities. 
+# we know the interval starts at p=0
+# to find out where tit stops, think of samples as data and ask where the 80th percentile is
+quantile( samples, 0.8) 
+
+# Find the upper-bound parameter of the first half of the density
+quantile( samples, 0.5)
+
+# Find the interval boundaries between the 10th percentile and the 90th percentile
+# This is a PI, a Percentile Intervals
+# They describe well unless the distribution is super asymetrical
+# This finds the middle 80% (middle, evenly)
+quantile(samples, c( 0.1 , 0.9 ))
+
+
+# What if we get 3 waters out of 3 tosses and use a flat, uniform prior?
+p_grid  <- seq( from=0, to=1, length.out=1000)
+prior <- rep(1, 1000)
+likelihood <- dbinom(3, size=3, prob=p_grid)
+posterior <- likelihood * prior # non-normalized
+posterior <- posterior / sum(posterior) #normalize
+samples <- sample( p_grid, size=1e4, replace=TRUE, prob=posterior)
+
+# PI function comes from the rethinking library
+# This interval runs like the quantile(samples, c(0.25, 0.75))
+quantile(samples, c(0.25, 0.75))
+PI(samples, prob=0.5)
+
+# HPDI is the Highest Posterior Density Interval
+# This is the narrowest interval containing the specified probability mass
+# HPDI is more computationally intensive than PI and has more simulation variance (sensitive to how many samples we draw)
+x <- HPDI(samples, prob=0.5)
+x
+
+width <- x[2] - x[1]
+width
+
+dens(samples)
+
+# Remember that the entire posterior distribution is the Bayesian "estimate"
+# History of science shows that "confidence intervals exchibit chronic overconfidence"
+
+# Point Estimates
+# 3rd common summary task for the posterior is to produce point estimates, of some kind
+# Given the entire posterior distribution, what value should you report?
+# Easy sounding question, but difficult to answer...
+# Point estmates discard information, however, since the Bayesian parameter estimate is the entire posterior distribution, a function mapping each parameter value onto a plausability value...
+p_grid[which.max(posterior)]
+
+chainmode(samples, adj=0.01)
+
+chainmode(samples)
+
+mean(samples)
+median(samples)
+
+# But why choose a mean, median, or mode? What's 'best' and why? It depends, right?
+# We can work with a Loss Function
+# Loss function si a rule that tells us the cost associated with using any particular point estimate.
+# Different loss functions imply different point estimates...
+
+# This calculates the weighted average loss, where each loss is weighted by its corresponding posterior probability
+sum(posterior * abs(0.5 - p_grid))
+
+loss <- sapply(p_grid , function(d) sum( posterior * abs(d - p_grid)))
+loss
+
+plot(loss)
+dens(loss)
+
+p_grid[which.min(loss)]
+
+# Try the median of the posterior(samples)
+median(samples)
+
+# What's the punchline?
+# In order to decide on a point estimate, a single value summary of the posterior distribution
+# We need to pick a loss function
+# Different loss functions nominate different point estimates, however
+# Two most common are:
+# absolute loss, which leads to the median, median(samples)
+# quadratic loss, (d - p)^2, which leads to the posterior mean, mean(samples)
+# If the sample distribution is symmetrical and normal-ish, these 2 loss functions converge on the same point
+# For example, with the 6 waters out of 9 tosses, these are basically the same value
+
 
