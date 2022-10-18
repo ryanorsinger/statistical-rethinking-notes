@@ -227,3 +227,26 @@ mean(samples)
 # For example, with the 6 waters out of 9 tosses, these are basically the same value
 
 
+sum( posterior * abs ( 0.5 - p_grid))
+
+
+loss <- sapply(p_grid, function(d) sum(posterior * abs(d - p_grid )))
+plot(loss)
+
+p_grid[which.min(loss)]
+
+dbinom(0:2 , size=2, prob=0.7)
+
+library(rethinking)
+dummy_w <- rbinom( 1e3 , size=9 , prob=0.3)
+simplehist( dummy_w , xlab="dummy water count")
+
+w <- rbinom( 1e4, size=9, prob=0.6)
+simplehist(w)
+
+
+w <- rbinom(1e4, size=9, prob=samples)
+simplehist(w)
+
+
+
