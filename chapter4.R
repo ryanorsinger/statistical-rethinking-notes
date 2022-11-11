@@ -1,4 +1,50 @@
 library(rethinking)
+
+# Random Walk
+pos <- replicate(1000, sum( runif(16, -1, 1)))
+
+# Normal distributions come from arise from summing random fluctuations
+hist(pos)
+
+# Normal distributions come from arise from summing random fluctuations
+plot(density(pos))
+
+# So this binomial outcome has a uniform distribution.
+# Completely fair "coin"
+# But the summations become normal
+
+# Produces a random growth rate
+prod(1 + runif(12, 0, 0.1))
+
+# Normal distributions come from arise from summing random fluctuations
+growth <- replicate(1e4, prod(1 + runif(12, 0, 0.1)))
+dens(growth, norm.comp=TRUE)
+
+# Notice how this produces something not-so normal
+big <- replicate(1e4, prod(1 + runif(12, 0, 0.5)))
+hist(big)
+
+# Much smaller numbers produce a normal distribution when multiplied 
+# b/c it's so much like summing, due to their size
+small <- replicate(1e4, prod(1 + runif(12, 0, 0.1)))
+hist(small)
+
+# But wait, there's more! 
+# Even if we're multiplying larger numbers together and they don't produce a Gaussian distribution, they DO tend to produce Gaussian distributions on a log scale!
+# TADA!
+log.big <- replicate(1e4, log(prod(1 + runif(12, 0, 0.5))))
+hist(log.big)
+
+
+
+
+
+
+
+
+
+
+library(rethinking)
 data(Howell1)
 d <- Howell1
 library(tidyverse)
